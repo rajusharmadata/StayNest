@@ -1,4 +1,5 @@
 import { getListingById } from "@/api/Listings";
+import { PropertyDetails } from "@/type/property";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { Heart, Home, MapPin, Star, Users } from "lucide-react-native";
@@ -16,26 +17,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
-
-interface PropertyDetails {
-  id: string;
-  title: string;
-  location: string;
-  price: number;
-  image: string;
-  images?: string[];
-  rating?: number;
-  reviews?: number;
-  description?: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  guests?: number;
-  amenities?: string[];
-  host?: {
-    name: string;
-    verified?: boolean;
-  };
-}
 
 export default function PropertyDetail() {
   const params = useLocalSearchParams();
@@ -55,6 +36,7 @@ export default function PropertyDetail() {
       setLoading(true);
 
       // Mock data - Replace with your API call
+      console.log(propertyId);
       const mockData = (await getListingById(propertyId)) as PropertyDetails;
 
       setProperty(mockData);
@@ -86,8 +68,10 @@ export default function PropertyDetail() {
       </SafeAreaView>
     );
   }
-
-  const images = property.images || [property.image];
+  const images =
+    property.images && property.images.length > 0
+      ? property.images
+      : [property.image];
 
   return (
     <View className="flex-1 bg-white">
@@ -227,7 +211,7 @@ export default function PropertyDetail() {
             <View className="flex-row items-center py-4 border-b border-gray-200 mb-4">
               <View className="w-12 h-12 rounded-full bg-blue-500 items-center justify-center">
                 <Text className="text-white font-bold text-lg">
-                  {property.host.name.charAt(0)}
+                  {property.host?.name?.charAt(0) ?? "?"}
                 </Text>
               </View>
               <View className="ml-3 flex-1">

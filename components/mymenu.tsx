@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/AuthContext";
 import { useMenu } from "@/context/MenuContext";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -5,6 +6,7 @@ import React from "react";
 import {
   Animated,
   Dimensions,
+  Image,
   Platform,
   Pressable,
   StatusBar,
@@ -27,6 +29,8 @@ interface MenuItem {
 
 export default function MyMenu() {
   const { open, toggleMenu, translateX, overlayOpacity } = useMenu();
+  const { logout, user } = useAuth();
+  console.log(user);
 
   const menuItems: MenuItem[] = [
     {
@@ -40,12 +44,14 @@ export default function MyMenu() {
       id: "bookings",
       label: "My Bookings",
       icon: "calendar-outline",
+      route: "/(tabs)/bookings",
       color: "#8B5CF6",
     },
     {
       id: "favorites",
       label: "Favorites",
       icon: "heart-outline",
+      route: "/(tabs)/favorites",
       color: "#EF4444",
     },
     {
@@ -53,6 +59,7 @@ export default function MyMenu() {
       label: "Profile",
       icon: "person-outline",
       color: "#10B981",
+      route: "/(tabs)/profile",
     },
     {
       id: "settings",
@@ -61,12 +68,13 @@ export default function MyMenu() {
       route: "/(tabs)/settings",
       color: "#6B7280",
     },
-    {
-      id: "help",
-      label: "Help & Support",
-      icon: "help-circle-outline",
-      color: "#F59E0B",
-    },
+    // {
+    //   id: "help",
+    //   label: "Help & Support",
+    //   icon: "help-circle-outline",
+    //   route: "/(tabs)/help",
+    //   color: "#F59E0B",
+    // },
   ];
 
   const handleMenuItemPress = (item: MenuItem) => {
@@ -77,11 +85,23 @@ export default function MyMenu() {
       }
     }, 300);
   };
+  const handleLogout = async () => {
+    try {
+      await logout(); // clear tokens + auth state
 
-  const handleLogout = () => {
-    toggleMenu();
-    console.log("Logout pressed");
+      console.log("Logout successful");
+
+      // 🚀 FORCE redirect
+      // router.replace("/(auth)/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      toggleMenu();
+    }
   };
+
+  // Don't render if menu is closed
+  if (!open) return null;
 
   if (!open) return null;
 
@@ -147,12 +167,23 @@ export default function MyMenu() {
             <Ionicons name="close" size={24} color="#fff" />
           </TouchableOpacity>
 
-          <View className="w-20 h-20 rounded-full bg-white items-center justify-center mb-4">
-            <Text className="text-blue-500 text-2xl font-bold">JD</Text>
+          <View className="w-20 h-20 rounded-full bg-white  items-center justify-center mb-4">
+            <Image
+              source={{
+                uri: `https://ui-avatars.com/api/?name=${user?.name}&background=random&color=fff`,
+              }}
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: 999,
+              }}
+            />
           </View>
 
-          <Text className="text-xl font-bold text-white mb-1">John Doe</Text>
-          <Text className="text-sm text-white/90">john.doe@example.com</Text>
+          <Text className="text-xl font-bold text-white mb-1">
+            {user?.name}
+          </Text>
+          <Text className="text-sm text-white/90">{user?.email}</Text>
 
           <View className="flex-row mt-4 gap-3">
             <View className="bg-white/20 rounded-lg px-3 py-2">
