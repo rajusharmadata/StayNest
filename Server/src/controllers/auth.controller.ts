@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User.model";
 import { AppError } from "../utils/AppError";
+import { generateAvatar } from "../utils/generateAvatar";
 import { generateAccessToken, generateRefreshToken } from "../utils/token";
 
 /* REGISTER */
@@ -16,7 +17,12 @@ export const register = async (
     const exists = await User.findOne({ email });
     if (exists) throw new AppError("User already exists", 400);
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({
+      name,
+      email,
+      password,
+      avatar: generateAvatar(name),
+    });
 
     const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
@@ -77,10 +83,13 @@ export const login = async (
     res.json({
       success: true,
       accessToken,
+      refreshToken,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
+        favorites: user.favorites,
+        avatar: user.avatar,
       },
     });
   } catch (err) {
